@@ -379,7 +379,7 @@ type Representation struct {
 type Accessibility struct {
 	AdaptationSet *AdaptationSet `xml:"-"`
 	SchemeIdUri   *string        `xml:"schemeIdUri,attr,omitempty"`
-	Value         *string        `xml:"value,attr,omitempty"`
+	Value         *string        `xml:"value,omitempty"`
 }
 
 type AudioChannelConfiguration struct {
