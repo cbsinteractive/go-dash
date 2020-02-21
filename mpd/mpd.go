@@ -79,6 +79,7 @@ type MPD struct {
 	TimeShiftBufferDepth       *string   `xml:"timeShiftBufferDepth,attr"`
 	SuggestedPresentationDelay *Duration `xml:"suggestedPresentationDelay,attr,omitempty"`
 	BaseURL                    string    `xml:"BaseURL,omitempty"`
+	Location                   string    `xml:"Location,omitempty"`
 	period                     *Period
 	Periods                    []*Period       `xml:"Period,omitempty"`
 	UTCTiming                  *DescriptorType `xml:"UTCTiming,omitempty"`
