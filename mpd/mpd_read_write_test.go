@@ -150,13 +150,14 @@ func TestAddNewAdaptationSetVideoWriteToString(t *testing.T) {
 	as.MaxWidth = ptrs.Strptr("720")
 	as.MinHeight = ptrs.Strptr("480")
 	as.MaxHeight = ptrs.Strptr("480")
+	as.SelectionPriority = ptrs.Uint64ptr(5)
 
 	xmlStr, err := m.WriteToString()
 	require.NoError(t, err)
 	expectedXML := `<?xml version="1.0" encoding="UTF-8"?>
 <MPD xmlns="urn:mpeg:dash:schema:mpd:2011" profiles="urn:mpeg:dash:profile:isoff-live:2011" type="static" mediaPresentationDuration="PT6M16S" minBufferTime="PT1.97S">
   <Period>
-    <AdaptationSet mimeType="video/mp4" startWithSAP="1" scanType="progressive" id="7357" segmentAlignment="true" minWidth="720" maxWidth="720" minHeight="480" maxHeight="480"></AdaptationSet>
+    <AdaptationSet mimeType="video/mp4" startWithSAP="1" scanType="progressive" id="7357" segmentAlignment="true" minWidth="720" maxWidth="720" minHeight="480" maxHeight="480" selectionPriority="5"></AdaptationSet>
   </Period>
 </MPD>
 `
