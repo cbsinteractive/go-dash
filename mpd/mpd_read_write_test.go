@@ -414,6 +414,7 @@ func OnDemandProfile() *MPD {
 	_, _ = audioAS.AddNewContentProtectionSchemeWidevineWithPSSH(getValidWVHeaderBytes())
 	_, _ = audioAS.AddNewContentProtectionSchemePlayreadyWithPSSH(VALID_PLAYREADY_PRO)
 	_, _ = audioAS.AddNewAccessibilityElement(ACCESSIBILITY_ELEMENT_SCHEME_DESCRIPTIVE_AUDIO, "1")
+	audioAS.SelectionPriority = ptrs.Uint64ptr(3)
 
 	audioRep, _ := audioAS.AddNewRepresentationAudio(44100, 128558, "mp4a.40.5", "800k/audio-und")
 	_ = audioRep.SetNewBaseURL("800k/output-audio-und.mp4")

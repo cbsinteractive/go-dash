@@ -180,6 +180,7 @@ type AdaptationSet struct {
 	MinHeight          *string           `xml:"minHeight,attr"`
 	MaxHeight          *string           `xml:"maxHeight,attr"`
 	ContentType        *string           `xml:"contentType,attr"`
+	SelectionPriority  *uint64           `xml:"selectionPriority,attr"`
 	Roles              []*Role           `xml:"Role,omitempty"`
 	SegmentBase        *SegmentBase      `xml:"SegmentBase,omitempty"`
 	SegmentList        *SegmentList      `xml:"SegmentList,omitempty"`
@@ -352,7 +353,7 @@ type SegmentTemplate struct {
 	AdaptationSet          *AdaptationSet   `xml:"-"`
 	SegmentTimeline        *SegmentTimeline `xml:"SegmentTimeline,omitempty"`
 	PresentationTimeOffset *uint64          `xml:"presentationTimeOffset,attr,omitempty"`
-	Duration               *float64         `xml:"duration,attr"`
+	Duration               *int64           `xml:"duration,attr"`
 	Initialization         *string          `xml:"initialization,attr"`
 	Media                  *string          `xml:"media,attr"`
 	StartNumber            *int64           `xml:"startNumber,attr"`
@@ -870,9 +871,9 @@ func (as *AdaptationSet) AddContentProtection(cp ContentProtectioner) error {
 // media - template string for media segments.
 // startNumber - the number to start segments from ($Number$) (i.e. 0).
 // timescale - sets the timescale for duration (i.e. 1000, represents milliseconds).
-func (as *AdaptationSet) SetNewSegmentTemplate(duration float64, init string, media string, startNumber int64, timescale int64) (*SegmentTemplate, error) {
+func (as *AdaptationSet) SetNewSegmentTemplate(duration int64, init string, media string, startNumber int64, timescale int64) (*SegmentTemplate, error) {
 	st := &SegmentTemplate{
-		Duration:       Float64ptr(duration),
+		Duration:       Int64ptr(duration),
 		Initialization: Strptr(init),
 		Media:          Strptr(media),
 		StartNumber:    Int64ptr(startNumber),
