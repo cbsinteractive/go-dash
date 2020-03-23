@@ -125,7 +125,6 @@ type CommonAttributesAndElements struct {
 	InbandEventStream         *DescriptorType       `xml:"inbandEventStream,attr"`
 }
 
-<<<<<<< HEAD
 type contentProtections []ContentProtectioner
 
 func (as *contentProtections) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
@@ -152,38 +151,12 @@ func (as *contentProtections) UnmarshalXML(d *xml.Decoder, start xml.StartElemen
 	}
 	*as = append(*as, target)
 	return nil
-=======
-type AdaptationSet struct {
-	CommonAttributesAndElements
-	XMLName            xml.Name              `xml:"AdaptationSet"`
-	ID                 *string               `xml:"id,attr"`
-	SegmentAlignment   *bool                 `xml:"segmentAlignment,attr"`
-	Lang               *string               `xml:"lang,attr"`
-	Group              *string               `xml:"group,attr"`
-	PAR                *string               `xml:"par,attr"`
-	MinBandwidth       *string               `xml:"minBandwidth,attr"`
-	MaxBandwidth       *string               `xml:"maxBandwidth,attr"`
-	MinWidth           *string               `xml:"minWidth,attr"`
-	MaxWidth           *string               `xml:"maxWidth,attr"`
-	MinHeight          *string               `xml:"minHeight,attr"`
-	MaxHeight          *string               `xml:"maxHeight,attr"`
-	ContentType        *string               `xml:"contentType,attr"`
-	SelectionPriority  *uint64               `xml:"selectionPriority,attr"`
-	ContentProtection  []ContentProtectioner `xml:"ContentProtection,omitempty"` // Common attribute, can be deprecated here
-	Roles              []*Role               `xml:"Role,omitempty"`
-	SegmentBase        *SegmentBase          `xml:"SegmentBase,omitempty"`
-	SegmentList        *SegmentList          `xml:"SegmentList,omitempty"`
-	SegmentTemplate    *SegmentTemplate      `xml:"SegmentTemplate,omitempty"` // Live Profile Only
-	Representations    []*Representation     `xml:"Representation,omitempty"`
-	AccessibilityElems []*Accessibility      `xml:"Accessibility,omitempty"`
->>>>>>> add selectionPriority attribute
 }
 
 // wrappedAdaptationSet provides the default xml unmarshal
 // to take care of the majority of our unmarshalling
 type wrappedAdaptationSet AdaptationSet
 
-<<<<<<< HEAD
 // dtoAdaptationSet parses the items out of AdaptationSet
 // that give us trouble:
 // * Content Protection interface
@@ -191,48 +164,6 @@ type dtoAdaptationSet struct {
 	wrappedAdaptationSet
 	ContentProtection contentProtections `xml:"ContentProtection,omitempty"`
 }
-=======
-	adaptationSet := struct {
-		CommonAttributesAndElements
-		XMLName            xml.Name              `xml:"AdaptationSet"`
-		ID                 *string               `xml:"id,attr"`
-		SegmentAlignment   *bool                 `xml:"segmentAlignment,attr"`
-		Lang               *string               `xml:"lang,attr"`
-		Group              *string               `xml:"group,attr"`
-		PAR                *string               `xml:"par,attr"`
-		MinBandwidth       *string               `xml:"minBandwidth,attr"`
-		MaxBandwidth       *string               `xml:"maxBandwidth,attr"`
-		MinWidth           *string               `xml:"minWidth,attr"`
-		MaxWidth           *string               `xml:"maxWidth,attr"`
-		MinHeight          *string               `xml:"minHeight,attr"`
-		MaxHeight          *string               `xml:"maxHeight,attr"`
-		ContentType        *string               `xml:"contentType,attr"`
-		SelectionPriority  *uint64               `xml:"selectionPriority,attr"`
-		ContentProtection  []ContentProtectioner `xml:"ContentProtection,omitempty"` // Common attribute, can be deprecated here
-		Roles              []*Role               `xml:"Role,omitempty"`
-		SegmentBase        *SegmentBase          `xml:"SegmentBase,omitempty"`
-		SegmentList        *SegmentList          `xml:"SegmentList,omitempty"`
-		SegmentTemplate    *SegmentTemplate      `xml:"SegmentTemplate,omitempty"` // Live Profile Only
-		Representations    []*Representation     `xml:"Representation,omitempty"`
-		AccessibilityElems []*Accessibility      `xml:"Accessibility,omitempty"`
-	}{}
-
-	var (
-		contentProtectionTags []ContentProtectioner
-		roles                 []*Role
-		segmentBase           *SegmentBase
-		segmentList           *SegmentList
-		segmentTemplate       *SegmentTemplate
-		representations       []*Representation
-	)
-
-	// decode inner elements
-	for {
-		t, err := d.Token()
-		if err != nil {
-			return err
-		}
->>>>>>> add selectionPriority attribute
 
 type AdaptationSet struct {
 	CommonAttributesAndElements
