@@ -256,12 +256,10 @@ func TestNewMPDOnDemandWithDolby(t *testing.T) {
 			XmlName: xml.Name{Space: "xmlns", Local: "dolby"},
 			Value:   "http://www.dolby.com/ns/online/DASH",
 		},
-		//XMLNsDolby:                Strptr("http://www.dolby.com/ns/online/DASH"),
 		XMLNsSCTE214: &XmlnsAttr{
 			XmlName: xml.Name{Space: "xmlns", Local: "scte214"},
 			Value:   "urn:scte:dash:scte214-extensions",
 		},
-		//XMLNsSCTE214:              Strptr("urn:scte:dash:scte214-extensions"),
 		Profiles:                  Strptr((string)(DASH_PROFILE_ONDEMAND)),
 		Type:                      Strptr("static"),
 		MediaPresentationDuration: Strptr(VALID_MEDIA_PRESENTATION_DURATION),
