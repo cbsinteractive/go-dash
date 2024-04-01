@@ -2,6 +2,7 @@ package mpd
 
 import (
 	"encoding/base64"
+	"encoding/xml"
 	"path/filepath"
 	"strconv"
 	"testing"
@@ -250,9 +251,15 @@ func TestNewMPDOnDemandWithDolby(t *testing.T) {
 
 	require.NotNil(t, m)
 	expectedMPD := &MPD{
-		XMLNs:                     Strptr("urn:mpeg:dash:schema:mpd:2011"),
-		XMLNsDolby:                Strptr("http://www.dolby.com/ns/online/DASH"),
-		XMLNsSCTE214:              Strptr("urn:scte:dash:scte214-extensions"),
+		XMLNs: Strptr("urn:mpeg:dash:schema:mpd:2011"),
+		XMLNsDolby: &XmlnsAttr{
+			XmlName: xml.Name{Space: "xmlns", Local: "dolby"},
+			Value:   "http://www.dolby.com/ns/online/DASH",
+		},
+		XMLNsSCTE214: &XmlnsAttr{
+			XmlName: xml.Name{Space: "xmlns", Local: "scte214"},
+			Value:   "urn:scte:dash:scte214-extensions",
+		},
 		Profiles:                  Strptr((string)(DASH_PROFILE_ONDEMAND)),
 		Type:                      Strptr("static"),
 		MediaPresentationDuration: Strptr(VALID_MEDIA_PRESENTATION_DURATION),
