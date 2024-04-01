@@ -73,6 +73,7 @@ var (
 type MPD struct {
 	XMLNs                      *string    `xml:"xmlns,attr"`
 	XMLNsDolby                 *string    `xml:"xmlns:dolby,attr"`
+	XMLNsSCTE214               *string    `xml:"xmlns:scte214,attr"`
 	Scte35NS                   *Scte35NS  `xml:"scte35,attr,omitempty"`
 	XsiNS                      *XmlnsAttr `xml:"xsi,attr,omitempty"`
 	XsiSchemaLocation          *XsiSL     `xml:"schemaLocation,attr,omitempty"`
@@ -246,9 +247,17 @@ func (as *AdaptationSet) UnmarshalXML(d *xml.Decoder, start xml.StartElement) er
 		return err
 	}
 	*as = AdaptationSet(n.wrappedAdaptationSet)
+
+	if as.Roles != nil {
+		as.Roles = n.Roles
+	}
+
 	as.ContentProtection = make([]ContentProtectioner, len(n.ContentProtection))
-	for i := range n.ContentProtection {
-		as.ContentProtection[i] = n.ContentProtection[i]
+	copy(as.ContentProtection, n.ContentProtection)
+
+	for i := range as.Representations {
+		as.Representations[i].SupplementalCodecs = n.Representations[i].SupplementalCodecs
+		as.Representations[i].SupplementalProfiles = n.Representations[i].SupplementalProfiles
 	}
 	return nil
 }
@@ -434,15 +443,17 @@ type Representation struct {
 	CommonAttributesAndElements
 	AdaptationSet             *AdaptationSet             `xml:"-"`
 	AudioChannelConfiguration *AudioChannelConfiguration `xml:"AudioChannelConfiguration,omitempty"`
-	AudioSamplingRate         *int64                     `xml:"audioSamplingRate,attr"`   // Audio
-	Bandwidth                 *int64                     `xml:"bandwidth,attr"`           // Audio + Video
-	Codecs                    *string                    `xml:"codecs,attr"`              // Audio + Video
-	FrameRate                 *string                    `xml:"frameRate,attr,omitempty"` // Video
-	Height                    *int64                     `xml:"height,attr"`              // Video
-	ID                        *string                    `xml:"id,attr"`                  // Audio + Video
-	Width                     *int64                     `xml:"width,attr"`               // Video
-	BaseURL                   []string                   `xml:"BaseURL,omitempty"`        // On-Demand Profile
-	SegmentBase               *SegmentBase               `xml:"SegmentBase,omitempty"`    // On-Demand Profile
+	AudioSamplingRate         *int64                     `xml:"audioSamplingRate,attr"`                      // Audio
+	Bandwidth                 *int64                     `xml:"bandwidth,attr"`                              // Audio + Video
+	Codecs                    *string                    `xml:"codecs,attr"`                                 // Audio + Video
+	SupplementalCodecs        *string                    `xml:"scte214:supplementalCodecs,attr,omitempty"`   // Video
+	SupplementalProfiles      *string                    `xml:"scte214:supplementalProfiles,attr,omitempty"` // Video
+	FrameRate                 *string                    `xml:"frameRate,attr,omitempty"`                    // Video
+	Height                    *int64                     `xml:"height,attr"`                                 // Video
+	ID                        *string                    `xml:"id,attr"`                                     // Audio + Video
+	Width                     *int64                     `xml:"width,attr"`                                  // Video
+	BaseURL                   []string                   `xml:"BaseURL,omitempty"`                           // On-Demand Profile
+	SegmentBase               *SegmentBase               `xml:"SegmentBase,omitempty"`                       // On-Demand Profile
 	SegmentList               *SegmentList               `xml:"SegmentList,omitempty"`
 	SegmentTemplate           *SegmentTemplate           `xml:"SegmentTemplate,omitempty"`
 }
@@ -461,6 +472,10 @@ type AudioChannelConfiguration struct {
 
 func (m *MPD) SetDolbyXMLNs() {
 	m.XMLNsDolby = Strptr("http://www.dolby.com/ns/online/DASH")
+}
+
+func (m *MPD) SetScte214XMLNs() {
+	m.XMLNsSCTE214 = Strptr("urn:scte:dash:scte214-extensions")
 }
 
 // Creates a new static MPD object.
@@ -1110,6 +1125,18 @@ func (as *AdaptationSet) AddNewRepresentationVideo(bandwidth int64, codecs strin
 	err := as.addRepresentation(r)
 	if err != nil {
 		return nil, err
+	}
+	return r, nil
+}
+
+// Adds supplementalCodecs and supplementalProfiles to a Representation
+// supplementalCodecs - scte214:supplementalCodecs attribute for Dovi 8.1 signaling (optional).
+// supplementalProfiles - scte214:supplementalProfiles attribute for Dovi 8.1 signaling (optional).
+func (r *Representation) AddScte214VideoCodecProperties(supplementalCodecs string, supplementalProfiles string) (*Representation, error) {
+	// For Dovi 8.1 signaling both supplementalCodecs and supplementalProfiles should be added
+	if len(supplementalCodecs) > 0 && len(supplementalProfiles) > 0 {
+		r.SupplementalCodecs = Strptr(supplementalCodecs)
+		r.SupplementalProfiles = Strptr(supplementalProfiles)
 	}
 	return r, nil
 }
