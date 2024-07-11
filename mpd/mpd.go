@@ -72,7 +72,8 @@ var (
 
 type MPD struct {
 	XMLNs                      *string    `xml:"xmlns,attr"`
-	XMLNsDolby                 *string    `xml:"xmlns:dolby,attr"`
+	XMLNsDolby                 *XmlnsAttr `xml:"dolby,attr"`
+	XMLNsSCTE214               *XmlnsAttr `xml:"scte214,attr"`
 	Scte35NS                   *Scte35NS  `xml:"scte35,attr,omitempty"`
 	XsiNS                      *XmlnsAttr `xml:"xsi,attr,omitempty"`
 	XsiSchemaLocation          *XsiSL     `xml:"schemaLocation,attr,omitempty"`
@@ -108,7 +109,25 @@ func (s *XmlnsAttr) UnmarshalXMLAttr(attr xml.Attr) error {
 }
 
 func (s *XmlnsAttr) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
+	if s == nil {
+		return xml.Attr{}, nil
+	}
 	return xml.Attr{Name: xml.Name{Local: fmt.Sprintf("xmlns:%s", s.XmlName.Local)}, Value: s.Value}, nil
+}
+
+type Scte214Attr struct {
+	XmlName xml.Name
+	Value   string
+}
+
+func (s *Scte214Attr) UnmarshalXMLAttr(attr xml.Attr) error {
+	s.XmlName = attr.Name
+	s.Value = attr.Value
+	return nil
+}
+
+func (s *Scte214Attr) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
+	return xml.Attr{Name: xml.Name{Local: fmt.Sprintf("scte214:%s", s.XmlName.Local)}, Value: s.Value}, nil
 }
 
 type XsiSL struct {
@@ -246,9 +265,17 @@ func (as *AdaptationSet) UnmarshalXML(d *xml.Decoder, start xml.StartElement) er
 		return err
 	}
 	*as = AdaptationSet(n.wrappedAdaptationSet)
+
+	if as.Roles != nil {
+		as.Roles = n.Roles
+	}
+
 	as.ContentProtection = make([]ContentProtectioner, len(n.ContentProtection))
-	for i := range n.ContentProtection {
-		as.ContentProtection[i] = n.ContentProtection[i]
+	copy(as.ContentProtection, n.ContentProtection)
+
+	for i := range as.Representations {
+		as.Representations[i].SupplementalCodecs = n.Representations[i].SupplementalCodecs
+		as.Representations[i].SupplementalProfiles = n.Representations[i].SupplementalProfiles
 	}
 	return nil
 }
@@ -434,15 +461,17 @@ type Representation struct {
 	CommonAttributesAndElements
 	AdaptationSet             *AdaptationSet             `xml:"-"`
 	AudioChannelConfiguration *AudioChannelConfiguration `xml:"AudioChannelConfiguration,omitempty"`
-	AudioSamplingRate         *int64                     `xml:"audioSamplingRate,attr"`   // Audio
-	Bandwidth                 *int64                     `xml:"bandwidth,attr"`           // Audio + Video
-	Codecs                    *string                    `xml:"codecs,attr"`              // Audio + Video
-	FrameRate                 *string                    `xml:"frameRate,attr,omitempty"` // Video
-	Height                    *int64                     `xml:"height,attr"`              // Video
-	ID                        *string                    `xml:"id,attr"`                  // Audio + Video
-	Width                     *int64                     `xml:"width,attr"`               // Video
-	BaseURL                   []string                   `xml:"BaseURL,omitempty"`        // On-Demand Profile
-	SegmentBase               *SegmentBase               `xml:"SegmentBase,omitempty"`    // On-Demand Profile
+	AudioSamplingRate         *int64                     `xml:"audioSamplingRate,attr"`              // Audio
+	Bandwidth                 *int64                     `xml:"bandwidth,attr"`                      // Audio + Video
+	Codecs                    *string                    `xml:"codecs,attr"`                         // Audio + Video
+	SupplementalCodecs        *Scte214Attr               `xml:"supplementalCodecs,attr,omitempty"`   // Video
+	SupplementalProfiles      *Scte214Attr               `xml:"supplementalProfiles,attr,omitempty"` // Video
+	FrameRate                 *string                    `xml:"frameRate,attr,omitempty"`            // Video
+	Height                    *int64                     `xml:"height,attr"`                         // Video
+	ID                        *string                    `xml:"id,attr"`                             // Audio + Video
+	Width                     *int64                     `xml:"width,attr"`                          // Video
+	BaseURL                   []string                   `xml:"BaseURL,omitempty"`                   // On-Demand Profile
+	SegmentBase               *SegmentBase               `xml:"SegmentBase,omitempty"`               // On-Demand Profile
 	SegmentList               *SegmentList               `xml:"SegmentList,omitempty"`
 	SegmentTemplate           *SegmentTemplate           `xml:"SegmentTemplate,omitempty"`
 }
@@ -460,7 +489,17 @@ type AudioChannelConfiguration struct {
 }
 
 func (m *MPD) SetDolbyXMLNs() {
-	m.XMLNsDolby = Strptr("http://www.dolby.com/ns/online/DASH")
+	m.XMLNsDolby = &XmlnsAttr{
+		XmlName: xml.Name{Space: "xmlns", Local: "dolby"},
+		Value:   "http://www.dolby.com/ns/online/DASH",
+	}
+}
+
+func (m *MPD) SetScte214XMLNs() {
+	m.XMLNsSCTE214 = &XmlnsAttr{
+		XmlName: xml.Name{Space: "xmlns", Local: "scte214"},
+		Value:   "urn:scte:dash:scte214-extensions",
+	}
 }
 
 // Creates a new static MPD object.
@@ -1110,6 +1149,30 @@ func (as *AdaptationSet) AddNewRepresentationVideo(bandwidth int64, codecs strin
 	err := as.addRepresentation(r)
 	if err != nil {
 		return nil, err
+	}
+	return r, nil
+}
+
+// Adds supplementalCodecs and supplementalProfiles to a Representation
+// supplementalCodecs - scte214:supplementalCodecs attribute for Dovi 8.1 signaling (optional).
+// supplementalProfiles - scte214:supplementalProfiles attribute for Dovi 8.1 signaling (optional).
+func (r *Representation) AddScte214VideoCodecProperties(supplementalCodecs string, supplementalProfiles string) (*Representation, error) {
+	// For Dovi 8.1 signaling both supplementalCodecs and supplementalProfiles should be added
+	if len(supplementalCodecs) > 0 && len(supplementalProfiles) > 0 {
+		r.SupplementalCodecs = &Scte214Attr{
+			XmlName: xml.Name{
+				Space: "scte214",
+				Local: "supplementalCodecs",
+			},
+			Value: supplementalCodecs,
+		}
+		r.SupplementalProfiles = &Scte214Attr{
+			XmlName: xml.Name{
+				Space: "scte214",
+				Local: "supplementalProfiles",
+			},
+			Value: supplementalProfiles,
+		}
 	}
 	return r, nil
 }
