@@ -24,7 +24,7 @@ func TestSegmentListDeserialization(t *testing.T) {
 		expected := getSegmentListMPD()
 
 		require.EqualString(t, m.Comment, "Generated with https://github.com/shaka-project/shaka-packager version 288eddc863-release")
-		require.EqualStringSlice(t, expected.Periods[0].BaseURL, m.Periods[0].BaseURL)
+		require.EqualStringSlice(t, BaseURLsToStrings(expected.Periods[0].BaseURL), BaseURLsToStrings(m.Periods[0].BaseURL))
 
 		expectedAudioSegList := expected.Periods[0].AdaptationSets[0].Representations[0].SegmentList
 		audioSegList := m.Periods[0].AdaptationSets[0].Representations[0].SegmentList
@@ -60,7 +60,7 @@ func TestSegmentListDeserialization(t *testing.T) {
 
 func getSegmentListMPD() *MPD {
 	m := NewMPD(DASH_PROFILE_LIVE, "PT30.016S", "PT2.000S")
-	m.period.BaseURL = []string{"http://localhost:8002/dash/"}
+	m.period.BaseURL = StringsToBaseURLs([]string{"http://localhost:8002/dash/"})
 	m.Comment = "Generated with https://github.com/shaka-project/shaka-packager version 288eddc863-release"
 
 	aas, _ := m.AddNewAdaptationSetAudioWithID("1", "audio/mp4", true, 1, "English")

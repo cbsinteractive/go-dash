@@ -88,8 +88,9 @@ type MPD struct {
 	PublishTime                *string    `xml:"publishTime,attr"`
 	TimeShiftBufferDepth       *string    `xml:"timeShiftBufferDepth,attr"`
 	SuggestedPresentationDelay *Duration  `xml:"suggestedPresentationDelay,attr,omitempty"`
-	BaseURL                    []string   `xml:"BaseURL,omitempty"`
-	Location                   string     `xml:"Location,omitempty"`
+	BaseURL                    []BaseURLValue `xml:"BaseURL,omitempty"`
+	ContentSteering            *ContentSteering `xml:"ContentSteering,omitempty"`
+	Location                   string           `xml:"Location,omitempty"`
 	period                     *Period
 	Periods                    []*Period       `xml:"Period,omitempty"`
 	UTCTiming                  *DescriptorType `xml:"UTCTiming,omitempty"`
@@ -153,7 +154,7 @@ type Period struct {
 	ID                   string           `xml:"id,attr,omitempty"`
 	Duration             Duration         `xml:"duration,attr,omitempty"`
 	Start                *Duration        `xml:"start,attr,omitempty"`
-	BaseURL              []string         `xml:"BaseURL,omitempty"`
+	BaseURL              []BaseURLValue   `xml:"BaseURL,omitempty"`
 	SegmentBase          *SegmentBase     `xml:"SegmentBase,omitempty"`
 	SegmentList          *SegmentList     `xml:"SegmentList,omitempty"`
 	SegmentTemplate      *SegmentTemplate `xml:"SegmentTemplate,omitempty"`
@@ -256,7 +257,7 @@ type AdaptationSet struct {
 	Labels              []string          `xml:"Label,omitempty"`
 	Representations     []*Representation `xml:"Representation,omitempty"`
 	AccessibilityElems  []*Accessibility  `xml:"Accessibility,omitempty"`
-	BaseURL             []string          `xml:"BaseURL,omitempty"`
+	BaseURL             []BaseURLValue    `xml:"BaseURL,omitempty"`
 }
 
 func (as *AdaptationSet) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
@@ -470,7 +471,7 @@ type Representation struct {
 	Height                    *int64                     `xml:"height,attr"`                         // Video
 	ID                        *string                    `xml:"id,attr"`                             // Audio + Video
 	Width                     *int64                     `xml:"width,attr"`                          // Video
-	BaseURL                   []string                   `xml:"BaseURL,omitempty"`                   // On-Demand Profile
+	BaseURL                   []BaseURLValue             `xml:"BaseURL,omitempty"`                   // On-Demand Profile
 	SegmentBase               *SegmentBase               `xml:"SegmentBase,omitempty"`               // On-Demand Profile
 	SegmentList               *SegmentList               `xml:"SegmentList,omitempty"`
 	SegmentTemplate           *SegmentTemplate           `xml:"SegmentTemplate,omitempty"`
@@ -1265,7 +1266,7 @@ func (r *Representation) SetNewBaseURL(baseURL string) error {
 		return ErrBaseURLEmpty
 	}
 	// overwrite for backwards compatability
-	r.BaseURL = []string{baseURL}
+	r.BaseURL = []BaseURLValue{{Value: baseURL}}
 	return nil
 }
 
@@ -1275,7 +1276,7 @@ func (r *Representation) AddNewBaseURL(baseURL string) error {
 	if baseURL == "" {
 		return ErrBaseURLEmpty
 	}
-	r.BaseURL = append(r.BaseURL, baseURL)
+	r.BaseURL = append(r.BaseURL, BaseURLValue{Value: baseURL})
 	return nil
 }
 

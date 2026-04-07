@@ -23,6 +23,14 @@ func ReadFromFile(path string) (*MPD, error) {
 // Reads a string into a MPD object.
 // xmlStr - MPD manifest data as a string.
 func ReadFromString(xmlStr string) (*MPD, error) {
+	return ReadFromStringWithOptions(xmlStr, nil)
+}
+
+// ReadFromStringWithOptions parses xmlStr into an MPD. If opts is nil, behavior
+// matches ReadFromString. Non-nil opts reserves content-steering-related options
+// for future use; unmarshaling is identical today.
+func ReadFromStringWithOptions(xmlStr string, opts *Options) (*MPD, error) {
+	_ = opts // reserved for content-steering / extended parse behavior
 	b := bytes.NewBufferString(xmlStr)
 	return Read(b)
 }
