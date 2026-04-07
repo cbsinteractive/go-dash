@@ -27,12 +27,18 @@ func ReadFromString(xmlStr string) (*MPD, error) {
 }
 
 // ReadFromStringWithOptions parses xmlStr into an MPD. If opts is nil, behavior
-// matches ReadFromString. Non-nil opts reserves content-steering-related options
-// for future use; unmarshaling is identical today.
+// matches ReadFromString. When opts.ContentSteering is non-nil, ApplyContentSteeringOptions
+// runs after decode so the in-memory MPD reflects policy before WriteToString/Write.
 func ReadFromStringWithOptions(xmlStr string, opts *Options) (*MPD, error) {
-	_ = opts // reserved for content-steering / extended parse behavior
 	b := bytes.NewBufferString(xmlStr)
-	return Read(b)
+	m, err := Read(b)
+	if err != nil {
+		return nil, err
+	}
+	if opts != nil && opts.ContentSteering != nil {
+		ApplyContentSteeringOptions(m, opts.ContentSteering)
+	}
+	return m, nil
 }
 
 // Reads from an io.Reader interface into an MPD object.

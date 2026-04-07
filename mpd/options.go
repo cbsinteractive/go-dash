@@ -2,8 +2,8 @@ package mpd
 
 // Options configures MPD read/write behavior for optional extensions.
 type Options struct {
-	// ContentSteering, when non-nil, enables parsing of ETSI TS 103 998 content
-	// steering (ContentSteering element and BaseURL@serviceLocation).
+	// ContentSteering, when non-nil, is merged onto the MPD after ReadFromStringWithOptions
+	// decodes XML (see ApplyContentSteeringOptions), so Write encodes steering elements.
 	ContentSteering *ContentSteeringOptions
 }
 

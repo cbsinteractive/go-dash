@@ -107,3 +107,29 @@ func TestStringsToBaseURLsAndBack(t *testing.T) {
 	b := StringsToBaseURLs(ss)
 	require.EqualStringSlice(t, ss, BaseURLsToStrings(b))
 }
+
+func TestReadFromStringWithOptionsAppliesSteeringOptionsForWrite(t *testing.T) {
+	xml := `<?xml version="1.0" encoding="UTF-8"?>
+<MPD xmlns="urn:mpeg:dash:schema:mpd:2011" type="static" mediaPresentationDuration="PT10S" minBufferTime="PT2S">
+  <Period id="0"><AdaptationSet mimeType="video/mp4">
+    <Representation id="v1" bandwidth="1000000" codecs="avc1.64001F"><BaseURL>v/</BaseURL></Representation>
+  </AdaptationSet></Period>
+</MPD>`
+	m, err := ReadFromStringWithOptions(xml, &Options{ContentSteering: &ContentSteeringOptions{
+		SteeringURI:            "https://steer.example/steer",
+		DefaultServiceLocation: "cdn-a",
+		SteeringBaseURLs: []SteeredBaseURL{
+			{Location: "cdn-a", Value: "https://cdn-a.example/out/"},
+			{Location: "cdn-b", Value: "https://cdn-b.example/out/"},
+		},
+	}})
+	require.NoError(t, err)
+	out, err := m.WriteToString()
+	require.NoError(t, err)
+	if !strings.Contains(out, "<ContentSteering") || !strings.Contains(out, "https://steer.example/steer") {
+		t.Fatalf("missing ContentSteering in output: %s", out)
+	}
+	if !strings.Contains(out, `serviceLocation="cdn-a"`) || !strings.Contains(out, "https://cdn-a.example/out/") {
+		t.Fatalf("missing steered BaseURL in output: %s", out)
+	}
+}

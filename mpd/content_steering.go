@@ -44,3 +44,35 @@ func BaseURLsToStrings(bs []BaseURLValue) []string {
 	}
 	return out
 }
+
+// ApplyContentSteeringOptions merges o into m so Write/Encode output includes policy-driven
+// steering (ETSI TS 103 998): the ContentSteering element and optional BaseURL@serviceLocation
+// rows. Non-empty SteeringURI replaces m.ContentSteering; SteeringBaseURLs are appended
+// to m.BaseURL (skipping entries with an empty Value).
+//
+// ReadFromStringWithOptions calls this automatically after a successful decode when
+// opts.ContentSteering is non-nil.
+func ApplyContentSteeringOptions(m *MPD, o *ContentSteeringOptions) {
+	if m == nil || o == nil {
+		return
+	}
+	if o.SteeringURI != "" {
+		cs := &ContentSteering{URI: o.SteeringURI}
+		if o.DefaultServiceLocation != "" {
+			s := string(o.DefaultServiceLocation)
+			cs.DefaultServiceLocation = &s
+		}
+		cs.QueryBeforeStart = o.QueryBeforeStart
+		cs.ClientRequirement = o.ClientRequirement
+		m.ContentSteering = cs
+	}
+	for _, sb := range o.SteeringBaseURLs {
+		if sb.Value == "" {
+			continue
+		}
+		m.BaseURL = append(m.BaseURL, BaseURLValue{
+			ServiceLocation: string(sb.Location),
+			Value:           sb.Value,
+		})
+	}
+}
