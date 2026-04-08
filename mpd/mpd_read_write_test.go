@@ -303,7 +303,7 @@ func TestFullLiveProfileMultiBaseURLWriteToString(t *testing.T) {
 	m := LiveProfile()
 	require.NotNil(t, m)
 
-	m.BaseURL = []string{"./", "../a/", "../b/"}
+	m.BaseURL = StringsToBaseURLs([]string{"./", "../a/", "../b/"})
 
 	xmlStr, err := m.WriteToString()
 	require.NoError(t, err)

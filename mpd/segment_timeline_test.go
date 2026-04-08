@@ -32,7 +32,7 @@ func TestSegmentTimelineDeserialization(t *testing.T) {
 	m, err := ReadFromString(xml)
 	require.NoError(t, err)
 	expected := getSegmentTimelineMPD()
-	require.EqualStringSlice(t, expected.Periods[0].BaseURL, m.Periods[0].BaseURL)
+	require.EqualStringSlice(t, BaseURLsToStrings(expected.Periods[0].BaseURL), BaseURLsToStrings(m.Periods[0].BaseURL))
 
 	expectedAudioSegTimeline := expected.Periods[0].AdaptationSets[0].Representations[0].SegmentTemplate.SegmentTimeline
 	audioSegTimeline := m.Periods[0].AdaptationSets[0].Representations[0].SegmentTemplate.SegmentTimeline
@@ -102,7 +102,7 @@ func getMultiPeriodSegmentTimelineMPD() *MPD {
 
 func getSegmentTimelineMPD() *MPD {
 	m := NewMPD(DASH_PROFILE_LIVE, "PT65.063S", "PT2.000S")
-	m.period.BaseURL = []string{"http://localhost:8002/public/"}
+	m.period.BaseURL = StringsToBaseURLs([]string{"http://localhost:8002/public/"})
 
 	aas, _ := m.AddNewAdaptationSetAudioWithID("1", "audio/mp4", true, 1, "English")
 	ra, _ := aas.AddNewRepresentationAudio(48000, 255000, "mp4a.40.2", "audio_1")

@@ -156,7 +156,7 @@ func TestWidevineContentProtection_ImplementsInterface(t *testing.T) {
 
 func TestNewMPDLiveWithBaseURLInMPD(t *testing.T) {
 	m := NewMPD(DASH_PROFILE_LIVE, VALID_MEDIA_PRESENTATION_DURATION, VALID_MIN_BUFFER_TIME)
-	m.BaseURL = []string{VALID_BASE_URL_VIDEO}
+	m.BaseURL = StringsToBaseURLs([]string{VALID_BASE_URL_VIDEO})
 	require.NotNil(t, m)
 	expectedMPD := &MPD{
 		XMLNs:                     Strptr("urn:mpeg:dash:schema:mpd:2011"),
@@ -166,7 +166,7 @@ func TestNewMPDLiveWithBaseURLInMPD(t *testing.T) {
 		MinBufferTime:             Strptr(VALID_MIN_BUFFER_TIME),
 		period:                    &Period{},
 		Periods:                   []*Period{{}},
-		BaseURL:                   []string{VALID_BASE_URL_VIDEO},
+		BaseURL:                   StringsToBaseURLs([]string{VALID_BASE_URL_VIDEO}),
 	}
 
 	expectedString, err := expectedMPD.WriteToString()
@@ -179,10 +179,10 @@ func TestNewMPDLiveWithBaseURLInMPD(t *testing.T) {
 
 func TestNewMPDLiveWithBaseURLInPeriod(t *testing.T) {
 	m := NewMPD(DASH_PROFILE_LIVE, VALID_MEDIA_PRESENTATION_DURATION, VALID_MIN_BUFFER_TIME)
-	m.period.BaseURL = []string{VALID_BASE_URL_VIDEO}
+	m.period.BaseURL = StringsToBaseURLs([]string{VALID_BASE_URL_VIDEO})
 	require.NotNil(t, m)
 	period := &Period{
-		BaseURL: []string{VALID_BASE_URL_VIDEO},
+		BaseURL: StringsToBaseURLs([]string{VALID_BASE_URL_VIDEO}),
 	}
 	expectedMPD := &MPD{
 		XMLNs:                     Strptr("urn:mpeg:dash:schema:mpd:2011"),
@@ -451,7 +451,7 @@ func TestAddNewBaseURLVideo(t *testing.T) {
 	err = r.AddNewBaseURL("../b/")
 	require.NoError(t, err)
 
-	require.EqualStringSlice(t, []string{"./", "../a/", "../b/"}, r.BaseURL)
+	require.EqualStringSlice(t, []string{"./", "../a/", "../b/"}, BaseURLsToStrings(r.BaseURL))
 }
 
 func TestSetNewBaseURLSubtitle(t *testing.T) {
