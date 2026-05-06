@@ -70,6 +70,9 @@ var (
 	ErrInbandEventStreamSchemeUriEmpty       = errors.New("Inband Event Stream schemeIdUri Empty")
 )
 
+// MPD is marshaled with encoding/xml (e.g. xml.Encoder.Encode). The marshaller reflects
+// on the concrete type and walks exported fields in struct source order, so reordering
+// fields changes emitted XML (attributes and child element sequence).
 type MPD struct {
 	XMLNs                      *string    `xml:"xmlns,attr"`
 	XMLNsDolby                 *XmlnsAttr `xml:"dolby,attr"`
@@ -88,14 +91,14 @@ type MPD struct {
 	PublishTime                *string    `xml:"publishTime,attr"`
 	TimeShiftBufferDepth       *string    `xml:"timeShiftBufferDepth,attr"`
 	SuggestedPresentationDelay *Duration  `xml:"suggestedPresentationDelay,attr,omitempty"`
-	BaseURL                    []BaseURLValue `xml:"BaseURL,omitempty"`
-	ContentSteering            *ContentSteering `xml:"ContentSteering,omitempty"`
+	BaseURL                    []BaseURLValue   `xml:"BaseURL,omitempty"`
 	Location                   string           `xml:"Location,omitempty"`
 	period                     *Period
-	Periods                    []*Period       `xml:"Period,omitempty"`
-	UTCTiming                  *DescriptorType `xml:"UTCTiming,omitempty"`
-	ID                         string          `xml:"id,attr,omitempty"`
-	Comment                    string          `xml:"-"`
+	Periods                    []*Period        `xml:"Period,omitempty"`
+	UTCTiming                  *DescriptorType  `xml:"UTCTiming,omitempty"`
+	ContentSteering            *ContentSteering `xml:"ContentSteering,omitempty"`
+	ID                         string           `xml:"id,attr,omitempty"`
+	Comment                    string           `xml:"-"`
 }
 
 type XmlnsAttr struct {

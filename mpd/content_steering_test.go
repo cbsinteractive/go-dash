@@ -108,6 +108,40 @@ func TestStringsToBaseURLsAndBack(t *testing.T) {
 	require.EqualStringSlice(t, ss, BaseURLsToStrings(b))
 }
 
+// ISO/IEC 23009-1 Amd 1 (DASH-MPD.xsd) requires ContentSteering to be the last
+// child of MPD. Strict XSD validators reject manifests that emit it earlier.
+func TestContentSteeringEmittedAfterPeriodAndUTCTiming(t *testing.T) {
+	m := NewDynamicMPD(DASH_PROFILE_LIVE, "1970-01-01T00:00:00Z", "PT2S",
+		AttrMediaPresentationDuration("PT10S"))
+	m.BaseURL = []BaseURLValue{
+		{ServiceLocation: "fastly", Value: "https://f.example/x/"},
+	}
+	m.ContentSteering = &ContentSteering{
+		DefaultServiceLocation: Strptr("fastly"),
+		URI:                    "https://steer.example/steer",
+	}
+	out, err := m.WriteToString()
+	require.NoError(t, err)
+
+	baseURLIdx := strings.Index(out, "<BaseURL")
+	periodOpenIdx := strings.Index(out, "<Period")
+	periodCloseIdx := strings.LastIndex(out, "</Period>")
+	utcIdx := strings.Index(out, "<UTCTiming")
+	csIdx := strings.Index(out, "<ContentSteering")
+	if baseURLIdx < 0 || periodOpenIdx < 0 || periodCloseIdx < 0 || utcIdx < 0 || csIdx < 0 {
+		t.Fatalf("missing expected element in output: %s", out)
+	}
+	if !(baseURLIdx < periodOpenIdx) {
+		t.Fatalf("BaseURL must come before Period: %s", out)
+	}
+	if !(csIdx > periodCloseIdx) {
+		t.Fatalf("ContentSteering must come after </Period>: %s", out)
+	}
+	if !(csIdx > utcIdx) {
+		t.Fatalf("ContentSteering must come after UTCTiming: %s", out)
+	}
+}
+
 func TestReadFromStringWithOptionsAppliesSteeringOptionsForWrite(t *testing.T) {
 	xml := `<?xml version="1.0" encoding="UTF-8"?>
 <MPD xmlns="urn:mpeg:dash:schema:mpd:2011" type="static" mediaPresentationDuration="PT10S" minBufferTime="PT2S">
