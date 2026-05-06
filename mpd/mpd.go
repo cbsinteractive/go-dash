@@ -70,6 +70,9 @@ var (
 	ErrInbandEventStreamSchemeUriEmpty       = errors.New("Inband Event Stream schemeIdUri Empty")
 )
 
+// MPD is marshaled with encoding/xml (e.g. xml.Encoder.Encode). The marshaller reflects
+// on the concrete type and walks exported fields in struct source order, so reordering
+// fields changes emitted XML (attributes and child element sequence).
 type MPD struct {
 	XMLNs                      *string    `xml:"xmlns,attr"`
 	XMLNsDolby                 *XmlnsAttr `xml:"dolby,attr"`
