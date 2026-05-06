@@ -88,14 +88,14 @@ type MPD struct {
 	PublishTime                *string    `xml:"publishTime,attr"`
 	TimeShiftBufferDepth       *string    `xml:"timeShiftBufferDepth,attr"`
 	SuggestedPresentationDelay *Duration  `xml:"suggestedPresentationDelay,attr,omitempty"`
-	BaseURL                    []BaseURLValue `xml:"BaseURL,omitempty"`
-	ContentSteering            *ContentSteering `xml:"ContentSteering,omitempty"`
+	BaseURL                    []BaseURLValue   `xml:"BaseURL,omitempty"`
 	Location                   string           `xml:"Location,omitempty"`
 	period                     *Period
-	Periods                    []*Period       `xml:"Period,omitempty"`
-	UTCTiming                  *DescriptorType `xml:"UTCTiming,omitempty"`
-	ID                         string          `xml:"id,attr,omitempty"`
-	Comment                    string          `xml:"-"`
+	Periods                    []*Period        `xml:"Period,omitempty"`
+	UTCTiming                  *DescriptorType  `xml:"UTCTiming,omitempty"`
+	ContentSteering            *ContentSteering `xml:"ContentSteering,omitempty"`
+	ID                         string           `xml:"id,attr,omitempty"`
+	Comment                    string           `xml:"-"`
 }
 
 type XmlnsAttr struct {
